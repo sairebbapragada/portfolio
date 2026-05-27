@@ -27,23 +27,22 @@ export default function Contact() {
     setErrMsg("");
 
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setStatus("success");
-        setForm({ name: "", email: "", message: "" });
-      } else {
-        setStatus("error");
-        setErrMsg(data.error || "Something went wrong.");
-      }
+      const { default: emailjs } = await import("@emailjs/browser");
+      await emailjs.send(
+        "service_17zevhb",
+        "template_iblfjak",
+        {
+          from_name: form.name,
+          from_email: form.email,
+          message: form.message,
+        },
+        "5uX9AgZbF_V0vS1x_"
+      );
+      setStatus("success");
+      setForm({ name: "", email: "", message: "" });
     } catch {
       setStatus("error");
-      setErrMsg("Network error. Please try again.");
+      setErrMsg("Something went wrong. Please try again.");
     }
   };
 
@@ -78,7 +77,6 @@ export default function Contact() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-16 items-start">
-            {/* Left */}
             <div>
               <h2 className="font-display text-4xl font-bold text-white mb-6 leading-tight">
                 Let&apos;s build something{" "}
@@ -113,7 +111,7 @@ export default function Contact() {
               </div>
 
               <div className="mt-10 flex gap-4">
-                <a
+                
                   href={resume.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -124,7 +122,6 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Right: Form */}
             <div>
               <form
                 onSubmit={handleSubmit}
@@ -197,23 +194,3 @@ export default function Contact() {
                   style={{
                     background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
                     color: "white",
-                    boxShadow: "0 8px 32px rgba(124,58,237,0.3)",
-                  }}
-                >
-                  {status === "loading" ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>Send Message <Send size={14} /></>
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
