@@ -56,7 +56,7 @@ export const resume = {
     {
       company: "UnitedHealthcare",
       role: "Reporting | Sales Reporting Analyst",
-      period: "June 2024 – Present",
+      period: "March 2026 – Present",
       current: true,
       bullets: [
         "Designed and deployed self-service Power BI dashboards adopted by enterprise stakeholders across Sales, Operations, and leadership, cutting ad hoc requests by ~70%.",
