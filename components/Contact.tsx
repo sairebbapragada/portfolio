@@ -111,7 +111,7 @@ export default function Contact() {
               </div>
 
               <div className="mt-10 flex gap-4">
-                
+                <a
                   href={resume.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -132,4 +132,85 @@ export default function Contact() {
                 }}
               >
                 <div>
-                  <label className="text-xs font-mono text-slate-500 uppercase tr
+                  <label className="text-xs font-mono text-slate-500 uppercase tracking-wider block mb-2">Name</label>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    required
+                    className={inputClass}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-mono text-slate-500 uppercase tracking-wider block mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    required
+                    className={inputClass}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-mono text-slate-500 uppercase tracking-wider block mb-2">Message</label>
+                  <textarea
+                    rows={5}
+                    placeholder="Tell me about your project or opportunity..."
+                    value={form.message}
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
+                    required
+                    className={`${inputClass} resize-none`}
+                    style={inputStyle}
+                  />
+                </div>
+
+                {status === "success" && (
+                  <div
+                    className="flex items-center gap-2 text-sm rounded-lg px-4 py-3"
+                    style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#86efac" }}
+                  >
+                    <CheckCircle size={15} /> Message sent! I&apos;ll be in touch soon.
+                  </div>
+                )}
+                {status === "error" && (
+                  <div
+                    className="flex items-center gap-2 text-sm rounded-lg px-4 py-3"
+                    style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#fca5a5" }}
+                  >
+                    <AlertCircle size={15} /> {errMsg}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm transition-all disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
+                    color: "white",
+                    boxShadow: "0 8px 32px rgba(124,58,237,0.3)",
+                  }}
+                >
+                  {status === "loading" ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>Send Message <Send size={14} /></>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
