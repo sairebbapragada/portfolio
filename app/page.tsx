@@ -1,3 +1,5 @@
+
+import Chatbot from "@/components/Chatbot";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -17,6 +19,7 @@ export default function Home() {
       <Projects />
       <TechStack />
       <Contact />
+      <Chatbot />
       <Footer />
     </main>
   );
