@@ -176,12 +176,6 @@ git push origin feature/YourFeature
 
 ---
 
-## License
-
-This project is licensed under the MIT License.
-
----
-
 ## Author
 
 **Satya Venkata Sai Rohit Rebbapragada (Sai)**  
