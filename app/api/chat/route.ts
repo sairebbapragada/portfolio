@@ -81,6 +81,7 @@ Keep answers concise, professional, and friendly. If asked something unrelated t
     );
 
     const data = await response.json();
+    console.log("Gemini response:", JSON.stringify(data));
     const reply =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "I'm not sure about that. Feel free to reach out to Sai directly at SaiRebbapragada@gmail.com!";
