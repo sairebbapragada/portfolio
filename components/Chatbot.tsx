@@ -3,74 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot, User } from "lucide-react";
 
-const faqs: { patterns: string[]; answer: string }[] = [
-  {
-    patterns: ["experience", "years", "how long", "background"],
-    answer:
-      "Sai has 2+ years of professional experience in data, currently working at UnitedHealthcare as a Sales Reporting Analyst since March 2026. He also completed internships at Optum and UnitedHealthcare.",
-  },
-  {
-    patterns: ["power bi", "dashboard", "bi", "tableau", "visualization"],
-    answer:
-      "Sai is highly skilled in Power BI and Tableau. He designed and deployed self-service Power BI dashboards at UnitedHealthcare that were adopted enterprise-wide, cutting ad hoc requests by ~70%.",
-  },
-  {
-    patterns: ["sql", "query", "database"],
-    answer:
-      "Sai has advanced SQL skills. He develops complex queries in DBeaver to extract and process multi-million row databases for sales agent reporting, onboarding tracking, and territory performance.",
-  },
-  {
-    patterns: ["python"],
-    answer:
-      "Sai is proficient in Python and uses it for data processing, pipeline automation, and analytics workflows alongside SQL and other tools.",
-  },
-  {
-    patterns: ["aws", "cloud", "s3", "glue"],
-    answer:
-      "Sai has experience with AWS including S3, Glue, and EMR basics for building and managing data pipelines in the cloud.",
-  },
-  {
-    patterns: ["etl", "pipeline", "automation", "ssrs"],
-    answer:
-      "Sai built end-to-end automated ETL pipelines at UnitedHealthcare using SSRS — pulling SQL data, converting to formatted Excel, and uploading to SharePoint on a schedule. This eliminated all manual file sharing.",
-  },
-  {
-    patterns: ["education", "degree", "school", "university", "study", "masters", "ms"],
-    answer:
-      "Sai holds a BA in Information Systems with a Minor in Marketing from the University of Wisconsin, Eau Claire. He is currently pursuing his MS in Data Science at the University of Pittsburgh (expected 2027).",
-  },
-  {
-    patterns: ["unitedhealthcare", "optum", "company", "work", "job", "current"],
-    answer:
-      "Sai currently works at UnitedHealthcare as a Sales Reporting Analyst (March 2026 – Present). Previously he was in the M&R Sales Support Rotational Program (June 2024 – March 2026) and interned at both Optum and UnitedHealthcare.",
-  },
-  {
-    patterns: ["skills", "tech", "tools", "stack"],
-    answer:
-      "Sai's core skills include SQL, Python, Power BI, Tableau, SSRS, ETL/ELT pipelines, AWS (S3, Glue, EMR), Databricks, SQL Server, MySQL, Excel/VBA, DAX, Power Query, and SharePoint.",
-  },
-  {
-    patterns: ["contact", "email", "reach", "hire", "connect"],
-    answer:
-      "You can reach Sai at SaiRebbapragada@gmail.com or connect with him on LinkedIn at linkedin.com/in/sairohitrebbapragada. You can also use the contact form on this page!",
-  },
-  {
-    patterns: ["open to", "available", "looking", "opportunity", "hire"],
-    answer:
-      "Yes! Sai is currently open to new opportunities — full-time roles, internships, or interesting data projects. Feel free to reach out!",
-  },
-  {
-    patterns: ["project", "built", "created"],
-    answer:
-      "Sai's key projects include: an Enterprise Sales BI Dashboard (70% reduction in ad hoc requests), an Automated SSRS Report Pipeline (100% manual effort eliminated), Territory Performance Analytics (millions of rows processed), and a Customer Experience Insights Platform at Optum.",
-  },
-  {
-    patterns: ["hello", "hi", "hey", "sup", "what's up"],
-    answer:
-      "Hi there! 👋 I'm Sai's portfolio assistant. Ask me anything about his experience, skills, projects, or how to get in touch!",
-  },
-];
-
 const suggestions = [
   "What are Sai's skills?",
   "Tell me about his experience",
@@ -83,37 +15,49 @@ type Message = {
   text: string;
 };
 
-function getAnswer(input: string): string {
-  const lower = input.toLowerCase();
-  for (const faq of faqs) {
-    if (faq.patterns.some((p) => lower.includes(p))) {
-      return faq.answer;
-    }
-  }
-  return "Great question! I'm not sure about that one. Feel free to reach out directly at SaiRebbapragada@gmail.com or use the contact form below — Sai will get back to you quickly!";
-}
-
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       from: "bot",
-      text: "Hi! 👋 I'm Sai's portfolio assistant. Ask me anything about his experience, skills, or projects!",
+      text: "Hi! 👋 I'm Sai's AI assistant powered by Gemini. Ask me anything about his experience, skills, or projects!",
     },
   ]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
-  const send = (text: string) => {
-    if (!text.trim()) return;
+  const send = async (text: string) => {
+    if (!text.trim() || loading) return;
     const userMsg: Message = { from: "user", text };
-    const botMsg: Message = { from: "bot", text: getAnswer(text) };
-    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      const botMsg: Message = {
+        from: "bot",
+        text: data.reply || "Sorry, I couldn't get a response. Please try again!",
+      };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { from: "bot", text: "Something went wrong. Please try again!" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -156,7 +100,7 @@ export default function Chatbot() {
               <Bot size={18} className="text-violet-300" />
             </div>
             <div>
-              <p className="text-white text-sm font-semibold font-display">Sai's Assistant</p>
+              <p className="text-white text-sm font-semibold">Sai's AI Assistant</p>
               <div className="flex items-center gap-1.5">
                 <span
                   style={{
@@ -168,16 +112,13 @@ export default function Chatbot() {
                     boxShadow: "0 0 6px #22c55e",
                   }}
                 />
-                <span className="text-xs text-slate-400">Online</span>
+                <span className="text-xs text-slate-400">Powered by Gemini</span>
               </div>
             </div>
           </div>
 
           {/* Messages */}
-          <div
-            className="px-4 py-4 space-y-3 overflow-y-auto"
-            style={{ height: 320 }}
-          >
+          <div className="px-4 py-4 space-y-3 overflow-y-auto" style={{ height: 320 }}>
             {messages.map((msg, i) => (
               <div
                 key={i}
@@ -192,7 +133,7 @@ export default function Chatbot() {
                   </div>
                 )}
                 <div
-                  className="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
+                  className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
                   style={
                     msg.from === "bot"
                       ? {
@@ -220,6 +161,34 @@ export default function Chatbot() {
                 )}
               </div>
             ))}
+
+            {/* Typing indicator */}
+            {loading && (
+              <div className="flex gap-2 justify-start">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "rgba(124,58,237,0.2)" }}
+                >
+                  <Bot size={14} className="text-violet-300" />
+                </div>
+                <div
+                  className="px-4 py-3 flex items-center gap-1"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "4px 16px 16px 16px",
+                  }}
+                >
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce"
+                      style={{ animationDelay: `${i * 0.15}s` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
 
@@ -256,7 +225,7 @@ export default function Chatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send(input)}
-              placeholder="Ask me anything..."
+              placeholder="Ask me anything about Sai..."
               className="flex-1 px-4 py-2 rounded-xl text-sm text-white placeholder-slate-600 outline-none"
               style={{
                 background: "rgba(255,255,255,0.05)",
@@ -265,7 +234,8 @@ export default function Chatbot() {
             />
             <button
               onClick={() => send(input)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110"
+              disabled={loading}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
             >
               <Send size={14} color="white" />
