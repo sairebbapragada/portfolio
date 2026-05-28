@@ -8,90 +8,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
-    const systemContext = `You are a helpful assistant for Sai Rebbapragada's portfolio website. Your job is to answer questions about Sai professionally and accurately. Here is everything you need to know about Sai:
+    const apiKey = process.env.GEMINI_API_KEY;
+    console.log("API Key exists:", !!apiKey);
 
-FULL NAME: Satya Venkata Sai Rohit Rebbapragada (goes by Sai)
-EMAIL: SaiRebbapragada@gmail.com
-LINKEDIN: linkedin.com/in/sairohitrebbapragada
+    const systemContext = `You are a helpful assistant for Sai Rebbapragada's portfolio website. Answer questions about Sai professionally. Here is info about Sai:
+- Data professional with 2+ years experience
+- Works at UnitedHealthcare as Sales Reporting Analyst (March 2026 - Present)
+- Previously M&R Sales Support Rotational Program (June 2024 - March 2026)
+- Interned at Optum (2023) and UnitedHealthcare (2022)
+- Skills: SQL, Python, Power BI, Tableau, SSRS, ETL/ELT, AWS, Databricks
+- Education: MS Data Science at University of Pittsburgh (Expected 2027), BA Information Systems UW Eau Claire
+- Email: SaiRebbapragada@gmail.com
+- LinkedIn: linkedin.com/in/sairohitrebbapragada
+- Open to new opportunities
+Keep answers short and friendly.`;
 
-BIO: Data professional with 2+ years of hands-on experience building ETL/ELT pipelines, BI dashboards, and automated reporting solutions. Pursuing MS in Data Science. Passionate about eliminating manual effort through scalable, automated data workflows.
-
-EDUCATION:
-- MS in Data Science, University of Pittsburgh (Expected 2027) - currently enrolled
-- BA in Information Systems, Minor in Marketing, University of Wisconsin Eau Claire (2024)
-
-WORK EXPERIENCE:
-1. UnitedHealthcare - Sales Reporting Analyst (March 2026 - Present)
-   - Designed and deployed self-service Power BI dashboards cutting ad hoc requests by ~70%
-   - Built end-to-end automated SSRS report distribution eliminating all manual file sharing
-   - Developed SQL queries processing multi-million row databases
-   - Established data quality controls with centralized auto-refresh logic
-
-2. UnitedHealthcare - M&R Sales Support Rotational Program (June 2024 - March 2026)
-   - Optimized SharePoint and Teams workflows
-   - Reduced call center dependency by ~30%
-   - Coordinated cross-functionally across Sales and Operations
-
-3. Optum - Customer Experience Intern (June 2023 - Aug 2023)
-   - Analyzed large-scale datasets for customer experience insights
-   - Built dashboards for leadership decision-making
-
-4. UnitedHealthcare - Marketing Intern (June 2022 - Aug 2022)
-   - Analyzed campaign and customer satisfaction data
-   - Developed recurring KPI reports
-
-SKILLS:
-- Languages: SQL (advanced), Python, M Query, DAX, VBA
-- Pipelines: ETL/ELT, Power Query, SSRS, Databricks, AWS (S3, Glue, EMR)
-- Databases: SQL Server, MySQL, DBeaver, data modeling
-- BI Tools: Power BI, Tableau, Excel
-- Platforms: AWS, SharePoint, Git
-
-KEY ACHIEVEMENTS:
-- Cut ad hoc reporting requests by 70% with Power BI dashboards
-- Eliminated 100% of manual file sharing with automated SSRS pipeline
-- Reduced inbound calls by 30% through improved data access
-- Processed multi-million row databases for enterprise reporting
-
-Sai is currently open to new opportunities - full time roles, internships, or interesting data projects.
-
-Keep answers concise, professional, and friendly. If asked something unrelated to Sai, politely redirect the conversation back to Sai's professional background.`;
-
-    const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `${systemContext}\n\nUser question: ${message}`,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            maxOutputTokens: 300,
-            temperature: 0.7,
-          },
+          contents: [{ parts: [{ text: `${systemContext}\n\nQuestion: ${message}` }] }],
+          generationConfig: { maxOutputTokens: 200, temperature: 0.7 },
         }),
       }
     );
 
-    const data = await response.json();
-    console.log("Gemini response:", JSON.stringify(data));
-    const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "I'm not sure about that. Feel free to reach out to Sai directly at SaiRebbapragada@gmail.com!";
+    const data = await res.json();
+    console.log("Gemini response status:", res.status);
+    console.log("Gemini data:", JSON.stringify(data).substring(0, 500));
 
+    if (data.error) {
+      console.error("Gemini error:", data.error);
+      return NextResponse.json({ reply: `API Error: ${data.error.message}` }, { status: 200 });
+    }
+
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't get a response. Please try again!";
     return NextResponse.json({ reply }, { status: 200 });
+
   } catch (error) {
     console.error("Chat API error:", error);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
